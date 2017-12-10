@@ -8,7 +8,9 @@ module.exports = function (req, res, next) {
   }
 
   res.sseSend = function(data) {
-    res.write("data: " + JSON.stringify(data) + "\n\n");
+    var datastr =
+      (typeof data === "string") ?  data : JSON.stringify(data);
+    res.write("data: " + datastr + "\n\n");
   }
 
   next()
