@@ -1,0 +1,25 @@
+<script>
+if (!!window.EventSource) {
+  var source = new EventSource('/stream');
+
+  source.addEventListener('message', function(e) {
+    var event = JSON.parse(e.data);
+    console.log('got event', event);
+  }, false)
+
+  source.addEventListener('open', function(e) {
+    console.log('connected');
+  }, false)
+
+  source.addEventListener('error', function(e) {
+    if (e.target.readyState == EventSource.CLOSED) {
+      console.log('disconnected');
+    }
+    else if (e.target.readyState == EventSource.CONNECTING) {
+      console.log('connecting');
+    }
+  }, false)
+} else {
+  console.log("Your browser doesn't support SSE")
+}
+</script>
