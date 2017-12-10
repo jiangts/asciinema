@@ -27,20 +27,28 @@ app.post('/push-event', function(req, res) {
 app.get('/stream', function(req, res) {
   res.sseSetup()
   connections.push(res)
+  res.sseSend({
+    "version": 2,
+    "width": 178,
+    "height": 48,
+    "command": "/bin/bash",
+    "title": "",
+    "env": {"SHELL": "/bin/bash", "TERM": "xterm-256color"},
+    "stream_url": "http://localhost:" + PORT + "/stream",
+    "idle_time_limit": null
+  });
 })
 
 app.get('/live.json', function(req, res) {
   res.json({
     "version": 2,
-    "width": 100,
-    "height": 30,
+    "width": 178,
+    "height": 48,
     "command": "/bin/zsh",
     "title": "",
-    "env": {
-      "TERM": "xterm-256color",
-      "SHELL": "/bin/zsh"
-    },
-    "stream_url": "http://localhost:" + PORT + "/stream"
+    "env": {"SHELL": "/bin/bash", "TERM": "xterm-256color"},
+    "stream_url": "http://localhost:" + PORT + "/stream",
+    "idle_time_limit": null
   });
 });
 
