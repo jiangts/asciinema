@@ -4,6 +4,7 @@ import json
 import json.decoder
 import time
 import codecs
+import requests
 from multiprocessing import Process, Queue
 
 from asciinema.pty_recorder import PtyRecorder
@@ -117,6 +118,13 @@ class writer():
         if text:
             ts = round(time.time() - self.start_time, 6)
             self.queue.put([ts, 'o', text])
+            # with open('/tmp/asciistream.json', 'a') as f:
+            #     json_value = [ts, 'o', text]
+            #     line = json.dumps(json_value, ensure_ascii=False, indent=None, separators=(', ', ': '))
+            #     f.write(line + "\n")
+            json_value = [ts, 'o', text]
+            line = json.dumps(json_value, ensure_ascii=False, indent=None, separators=(', ', ': '))
+            requests.get("http://localhost:3003/push-event", params={'event': line})
 
 
 class Recorder:
