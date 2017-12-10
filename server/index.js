@@ -6,7 +6,8 @@ var express = require('express')
 var PORT = process.env.PORT || 3003;
 var connections = [];
 
-app.use(express.static('public'))
+// app.use(express.static('public'))
+app.use(express.static('player'))
 app.use(sse)
 
 // stuff the array into a dict with key event
