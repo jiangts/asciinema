@@ -24,33 +24,25 @@ app.post('/push-event', function(req, res) {
   res.sendStatus(200)
 })
 
+var header;
+var waitingConnections = []
+app.get('/push-header', function(req, res) {
+  header = req.query.header
+  while(waitingConnections.length > 0) {
+    waitingConnections.pop().sseSend(header);
+  }
+  console.log('HEADER', header)
+  // our header is missing `title`, `command`
+
+  res.sendStatus(200)
+})
+
 app.get('/stream', function(req, res) {
   res.sseSetup()
   connections.push(res)
-  res.sseSend({
-    "version": 2,
-    "width": 178,
-    "height": 48,
-    "command": "/bin/bash",
-    "title": "",
-    "env": {"SHELL": "/bin/bash", "TERM": "xterm-256color"},
-    "stream_url": "http://localhost:" + PORT + "/stream",
-    "idle_time_limit": null
-  });
+  if (header) res.sseSend(header);
+  else waitingConnections.push(res);
 })
-
-app.get('/live.json', function(req, res) {
-  res.json({
-    "version": 2,
-    "width": 178,
-    "height": 48,
-    "command": "/bin/zsh",
-    "title": "",
-    "env": {"SHELL": "/bin/bash", "TERM": "xterm-256color"},
-    "stream_url": "http://localhost:" + PORT + "/stream",
-    "idle_time_limit": null
-  });
-});
 
 app.listen(PORT, function() {
   console.log('Listening on port ' + PORT + '...');

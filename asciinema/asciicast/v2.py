@@ -88,6 +88,10 @@ class writer():
         self.stdin_decoder = codecs.getincrementaldecoder('UTF-8')('replace')
         self.stdout_decoder = codecs.getincrementaldecoder('UTF-8')('replace')
 
+        self.header['stream_url'] = 'http://localhost:3003/stream'
+        header = json.dumps(self.header, ensure_ascii=False, indent=None, separators=(', ', ': '))
+        requests.get("http://localhost:3003/push-header", params={'header':header})
+
     def __enter__(self):
         mode = 'a' if self.start_time_offset > 0 else 'w'
         self.process = Process(
@@ -157,3 +161,4 @@ class Recorder:
 
         with writer(path, header, rec_stdin, start_time_offset) as w:
             self.pty_recorder.record_command(['sh', '-c', command], w, command_env)
+
