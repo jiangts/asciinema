@@ -88,9 +88,10 @@ class writer():
         self.stdin_decoder = codecs.getincrementaldecoder('UTF-8')('replace')
         self.stdout_decoder = codecs.getincrementaldecoder('UTF-8')('replace')
 
-        self.header['stream_url'] = 'http://localhost:3003/stream'
+        self.host = 'https://term.motif.gq' # 'http://localhost:3003'
+        self.header['stream_url'] = self.host + '/stream'
         header = json.dumps(self.header, ensure_ascii=False, indent=None, separators=(', ', ': '))
-        requests.get("http://localhost:3003/push-header", params={'header':header})
+        requests.get(self.host + '/push-header', params={'header':header})
 
     def __enter__(self):
         mode = 'a' if self.start_time_offset > 0 else 'w'
@@ -128,7 +129,7 @@ class writer():
             #     f.write(line + "\n")
             json_value = [ts, 'o', text]
             line = json.dumps(json_value, ensure_ascii=False, indent=None, separators=(', ', ': '))
-            requests.get("http://localhost:3003/push-event", params={'event': line})
+            requests.get(self.host + '/push-event', params={'event': line})
 
 
 class Recorder:
