@@ -4,7 +4,8 @@ import json
 import json.decoder
 import time
 import codecs
-import requests
+# import requests
+from requests_futures.sessions import FuturesSession
 from multiprocessing import Process, Queue
 
 from asciinema.pty_recorder import PtyRecorder
@@ -88,10 +89,12 @@ class writer():
         self.stdin_decoder = codecs.getincrementaldecoder('UTF-8')('replace')
         self.stdout_decoder = codecs.getincrementaldecoder('UTF-8')('replace')
 
+        self.session = FuturesSession()
         self.host = 'https://term.motif.gq' # 'http://localhost:3003'
         self.header['stream_url'] = self.host + '/stream'
         header = json.dumps(self.header, ensure_ascii=False, indent=None, separators=(', ', ': '))
-        requests.get(self.host + '/push-header', params={'header':header})
+        self.session.get(self.host + '/push-header', params={'header':header})
+        self.seqno = 0
 
     def __enter__(self):
         mode = 'a' if self.start_time_offset > 0 else 'w'
@@ -129,7 +132,8 @@ class writer():
             #     f.write(line + "\n")
             json_value = [ts, 'o', text]
             line = json.dumps(json_value, ensure_ascii=False, indent=None, separators=(', ', ': '))
-            requests.get(self.host + '/push-event', params={'event': line})
+            self.seqno += 1
+            self.session.get(self.host + '/push-event', params={'event': line, 'seqno': self.seqno})
 
 
 class Recorder:

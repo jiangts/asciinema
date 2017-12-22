@@ -10,19 +10,28 @@ var connections = [];
 app.use(express.static('player'))
 app.use(sse)
 
+var waterline = 0
+var buffer = {}
 // stuff the array into a dict with key event
 app.get('/push-event', function(req, res) {
-  console.log(req.query.event);
-  connections.map(conn => conn.sseSend(req.query.event))
+  // console.log(req.query);
+  buffer[req.query.seqno] = req.query.event
+
+  while(buffer[waterline+1]) {
+    var ev = buffer[waterline+1]
+    connections.map(conn => conn.sseSend(ev))
+    delete buffer[waterline+1]
+    waterline += 1
+  }
 
   res.sendStatus(200)
 })
 
-app.post('/push-event', function(req, res) {
-  connections.map(conn => conn.sseSend(req.body.event))
-
-  res.sendStatus(200)
-})
+// app.post('/push-event', function(req, res) {
+//   connections.map(conn => conn.sseSend(req.body.event))
+//
+//   res.sendStatus(200)
+// })
 
 var header;
 var waitingConnections = []
