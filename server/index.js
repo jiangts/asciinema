@@ -15,6 +15,7 @@ var buffer = {}
 // stuff the array into a dict with key event
 app.get('/push-event', function(req, res) {
   // console.log(req.query);
+  if(req.query.seqno == 1) waterline = 0;
   buffer[req.query.seqno] = req.query.event
 
   while(buffer[waterline+1]) {
