@@ -53,6 +53,8 @@ class RecordCommand(Command):
 
         command = self.command or self.env.get('SHELL') or 'sh'
         command_env = self.env.copy()
+        if 'ASCIINEMA_REC' in command_env and command_env['ASCIINEMA_REC'] == '1':
+            self.print_info("""WARNING: you are nesting sessions!""")
         command_env['ASCIINEMA_REC'] = '1'
         vars = filter(None, map((lambda var: var.strip()), self.env_whitelist.split(',')))
         captured_env = {var: self.env.get(var) for var in vars}
