@@ -1,14 +1,21 @@
 // CREDITS: https://www.terlici.com/2015/12/04/realtime-node-expressjs-with-sse.html
 var express = require('express')
-  , app = express()
-  , sse = require('./sse')
-  , shortid = require('shortid')
+var app = express()
+var sse = require('./sse')
+var bodyParser = require('body-parser')
+var shortid = require('shortid')
+
 
 var PORT = process.env.PORT || 3003;
 
 // app.use(express.static('public'))
 app.use(express.static('player'))
 app.use(sse)
+
+// parse various different custom JSON types as JSON
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: false }))
+
 
 var sessions = {}
 
@@ -22,15 +29,25 @@ var makeSession = function(key) {
   }
 }
 
-// stuff the array into a dict with key event
-app.get('/push-event', function(req, res) {
-  // console.log(req.query);
-  var sessionKey = req.query.session
+const api = function(app, path, f) {
+  app.get(path, function(req, res, next) {
+    req.args = req.query
+    return f(req, res, next);
+  })
+  app.post(path, function(req, res, next) {
+    req.args = req.body
+    return f(req, res, next);
+  })
+}
+
+const pushEvent = function(req, res) {
+  // console.log(req.args);
+  var sessionKey = req.args.session
   if (sessionKey) {
     var session = sessions[sessionKey]
 
-    if(req.query.seqno == 1) session.waterline = 0;
-    session.buffer[req.query.seqno] = req.query.event
+    if(req.args.seqno == 1) session.waterline = 0;
+    session.buffer[req.args.seqno] = req.args.event
 
     while(session.buffer[session.waterline+1]) {
       var ev = session.buffer[session.waterline+1]
@@ -42,17 +59,17 @@ app.get('/push-event', function(req, res) {
     res.sendStatus(200)
   }
   else {
-    res.status(400).end('missing session query parameter')
+    res.status(400).end('missing session parameter')
   }
-})
+}
 
-app.get('/push-header', function(req, res) {
-  var sessionKey = req.query.session
+const pushHeader = function(req, res) {
+  var sessionKey = req.args.session
   if (sessionKey) {
     sessions[sessionKey] = makeSession(sessionKey)
     var session = sessions[sessionKey]
 
-    session.header = req.query.header
+    session.header = req.args.header
     while(session.waitingConnections.length > 0) {
       waitingConnections.pop().sseSend(session.header);
     }
@@ -62,14 +79,21 @@ app.get('/push-header', function(req, res) {
     res.sendStatus(200)
   }
   else {
-    res.status(400).end('missing session query parameter')
+    res.status(400).end('missing session parameter')
   }
-})
+}
 
-app.get('/request-session', function(req, res) {
+const requestSession = function(req, res) {
   var id = shortid.generate()
   res.json({id: id})
-})
+}
+
+
+// stuff the array into a dict with key event
+api(app, '/push-event', pushEvent)
+api(app, '/push-header', pushHeader)
+api(app, '/request-session', requestSession)
+
 
 app.get('/stream/:id', function(req, res) {
   res.sseSetup()

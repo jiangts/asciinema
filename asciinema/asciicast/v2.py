@@ -90,14 +90,15 @@ class writer():
         self.stdout_decoder = codecs.getincrementaldecoder('UTF-8')('replace')
 
         self.session = FuturesSession()
-        self.host = 'http://localhost:3003' #'https://term.motif.gq' #
+        self.host = 'http://localhost:3003'
+        # self.host = 'https://term.motif.gq'
 
         r = requests.get(self.host + '/request-session')
         self.sessionKey = r.json()['id']
         self.header['stream_url'] = self.host + '/stream/' + self.sessionKey
-        print(self.host + '/stream.html?session=' + self.sessionKey)
+        print(self.host + '/?session=' + self.sessionKey)
         header = json.dumps(self.header, ensure_ascii=False, indent=None, separators=(', ', ': '))
-        self.session.get(self.host + '/push-header', params={'header':header, 'session': self.sessionKey})
+        self.session.post(self.host + '/push-header', data={'header':header, 'session': self.sessionKey})
         self.seqno = 0
 
     def __enter__(self):
@@ -137,7 +138,7 @@ class writer():
             json_value = [ts, 'o', text]
             line = json.dumps(json_value, ensure_ascii=False, indent=None, separators=(', ', ': '))
             self.seqno += 1
-            self.session.get(self.host + '/push-event', params={'event': line, 'seqno': self.seqno, 'session': self.sessionKey})
+            self.session.post(self.host + '/push-event', data={'event': line, 'seqno': self.seqno, 'session': self.sessionKey})
 
 
 class Recorder:
