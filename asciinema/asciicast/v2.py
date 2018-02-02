@@ -90,8 +90,8 @@ class writer():
         self.stdout_decoder = codecs.getincrementaldecoder('UTF-8')('replace')
 
         self.session = FuturesSession()
-        self.host = 'http://localhost:3003'
-        # self.host = 'https://term.motif.gq'
+        # self.host = 'http://localhost:3003'
+        self.host = 'https://term.motif.gq'
 
         r = requests.get(self.host + '/request-session')
         self.sessionKey = r.json()['id']
@@ -139,6 +139,15 @@ class writer():
             line = json.dumps(json_value, ensure_ascii=False, indent=None, separators=(', ', ': '))
             self.seqno += 1
             self.session.post(self.host + '/push-event', data={'event': line, 'seqno': self.seqno, 'session': self.sessionKey})
+
+    def write_resize(self, dims):
+        ts = round(time.time() - self.start_time, 6)
+        self.queue.put([ts, 'm', dims])
+
+        json_value = [ts, 'm', dims]
+        line = json.dumps(json_value, ensure_ascii=False, indent=None, separators=(', ', ': '))
+        self.seqno += 1
+        self.session.post(self.host + '/push-event', data={'event': line, 'seqno': self.seqno, 'session': self.sessionKey})
 
 
 class Recorder:

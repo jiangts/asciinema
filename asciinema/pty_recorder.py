@@ -8,6 +8,7 @@ import termios
 import select
 import io
 import shlex
+import shutil
 import sys
 import struct
 
@@ -33,6 +34,10 @@ class PtyRecorder:
                 buf = array.array('h', [24, 80, 0, 0])
 
             fcntl.ioctl(master_fd, termios.TIOCSWINSZ, buf)
+
+            signal.signal(signal.SIGWINCH,
+                    lambda signal, frame:
+                    output.write_resize(shutil.get_terminal_size()))
 
         def _write_stdout(data):
             '''Writes to stdout as if the child process had written the data.'''
@@ -109,6 +114,7 @@ class PtyRecorder:
                                 _set_pty_size()
 
         pid, master_fd = pty.fork()
+
 
         if pid == pty.CHILD:
             os.execvpe(command[0], command, env)
