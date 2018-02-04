@@ -90,8 +90,8 @@ class writer():
         self.stdout_decoder = codecs.getincrementaldecoder('UTF-8')('replace')
 
         self.session = FuturesSession()
-        # self.host = 'http://localhost:3003'
-        self.host = 'https://term.motif.gq'
+        self.host = 'http://localhost:3003'
+        # self.host = 'https://term.motif.gq'
 
         r = requests.get(self.host + '/request-session')
         self.sessionKey = r.json()['id']

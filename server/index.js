@@ -43,7 +43,7 @@ const api = function(app, path, f) {
 const pushEvent = function(req, res) {
   // console.log(req.args);
   var sessionKey = req.args.session
-  if (sessionKey) {
+  if (sessionKey && sessions[sessionKey]) {
     var session = sessions[sessionKey]
 
     if(req.args.seqno == 1) session.waterline = 0;
@@ -84,8 +84,16 @@ const pushHeader = function(req, res) {
 }
 
 const requestSession = function(req, res) {
-  var id = shortid.generate()
+  const id = shortid.generate()
   res.json({id: id})
+}
+
+const getSessions = function(req, res) {
+  var out = {}
+  for (name in sessions) {
+    out[name] = sessions[name].waterline
+  }
+  res.json(out)
 }
 
 
@@ -93,17 +101,25 @@ const requestSession = function(req, res) {
 api(app, '/push-event', pushEvent)
 api(app, '/push-header', pushHeader)
 api(app, '/request-session', requestSession)
+api(app, '/get-sessions', getSessions)
 
 
 app.get('/stream/:id', function(req, res) {
   res.sseSetup()
   var sessionKey = req.params.id
-  if (sessionKey) {
-    var header = sessions[sessionKey].header
-    var waitingConnections = sessions[sessionKey].waitingConnections
-    sessions[sessionKey].connections.push(res)
+  if (sessionKey && sessions[sessionKey]) {
+    var session = sessions[sessionKey]
+    var header = session.header
+    session.connections.push(res)
     if (header) res.sseSend(header);
-    else waitingConnections.push(res);
+    else session.waitingConnections.push(res);
+
+    while(Object.keys(session.buffer).length > 0) {
+      var ev = session.buffer[session.waterline+1]
+      session.connections.map(conn => conn.sseSend(ev))
+      delete session.buffer[session.waterline+1]
+      session.waterline += 1
+    }
   }
 })
 
