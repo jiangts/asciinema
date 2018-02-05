@@ -88,6 +88,19 @@ const requestSession = function(req, res) {
   res.json({id: id})
 }
 
+const endSession = function(req, res) {
+  var sessionKey = req.args.session
+  if (sessionKey) {
+    delete sessions[sessionKey]
+    // TODO close SSE connections?
+
+    res.sendStatus(200)
+  }
+  else {
+    res.status(400).end('missing session parameter')
+  }
+}
+
 const getSessions = function(req, res) {
   var out = {}
   for (name in sessions) {
@@ -101,6 +114,7 @@ const getSessions = function(req, res) {
 api(app, '/push-event', pushEvent)
 api(app, '/push-header', pushHeader)
 api(app, '/request-session', requestSession)
+api(app, '/end-session', endSession)
 api(app, '/get-sessions', getSessions)
 
 

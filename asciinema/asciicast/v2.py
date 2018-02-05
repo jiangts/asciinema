@@ -114,6 +114,7 @@ class writer():
         return self
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
+        self.session.post(self.host + '/end-session', data={'session': self.sessionKey})
         self.queue.put(None)
         self.process.join()
 
