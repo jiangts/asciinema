@@ -5,6 +5,7 @@ import json.decoder
 import time
 import codecs
 import requests
+import uuid
 from requests_futures.sessions import FuturesSession
 from multiprocessing import Process, Queue
 
@@ -189,11 +190,12 @@ class Streamer:
     def __init__(self, pty_recorder=None):
         self.pty_recorder = pty_recorder if pty_recorder is not None else PtyRecorder()
 
-    def stream(self, path, append, command, command_env, captured_env, rec_stdin, title, idle_time_limit):
+    def stream(self, command, command_env, captured_env, rec_stdin, title, idle_time_limit):
         start_time_offset = 0
 
-        if append and os.stat(path).st_size > 0:
-            start_time_offset = get_duration(path)
+        path = './.motif-stream-' + str(uuid.uuid4())
+        while os.path.exists(path):
+            path = str(uuid.uuid4())
 
         cols = int(subprocess.check_output(['tput', 'cols']))
         lines = int(subprocess.check_output(['tput', 'lines']))
@@ -214,5 +216,6 @@ class Streamer:
 
         with writer(path, header, rec_stdin, start_time_offset) as w:
             self.pty_recorder.record_command(['sh', '-c', command], w, command_env)
-        print("HERE BOI")
+
+        os.remove(path)
 

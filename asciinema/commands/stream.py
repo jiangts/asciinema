@@ -37,8 +37,6 @@ class StreamCommand(Command):
         captured_env = {var: self.env.get(var) for var in vars}
 
         self.streamer.stream(
-            "./test",
-            True,
             command,
             command_env,
             captured_env,
@@ -47,17 +45,7 @@ class StreamCommand(Command):
             self.idle_time_limit
         )
 
-        self.print_info("Streaming finished.")
-
-        if upload:
-            if not self.assume_yes:
-                self.print_info("Press <Enter> to upload to %s, <Ctrl-C> to save locally." % self.api.hostname())
-                try:
-                    sys.stdin.readline()
-                except KeyboardInterrupt:
-                    self.print("\r", end="")
-                    self.print_info("Session %s ended" % "TODO: put stream ID here")
-                    return 0
+        self.print_info("Streaming ended.")
 
         return 0
 
