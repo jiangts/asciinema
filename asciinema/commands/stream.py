@@ -25,7 +25,7 @@ class StreamCommand(Command):
         upload = False
 
 
-        self.print_info("Streaming asciicast to %s" % "TODO: put stream ID here")
+        self.print_info("Initializing your stream...")
         self.print_info("""Hit <Ctrl-D> or type "exit" when you're done.""")
 
         command = self.command or self.env.get('SHELL') or 'sh'
