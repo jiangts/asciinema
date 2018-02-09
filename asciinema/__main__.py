@@ -7,6 +7,7 @@ from asciinema import __version__
 import asciinema.config as config
 from asciinema.commands.auth import AuthCommand
 from asciinema.commands.record import RecordCommand
+from asciinema.commands.stream import StreamCommand
 from asciinema.commands.play import PlayCommand
 from asciinema.commands.cat import CatCommand
 from asciinema.commands.upload import UploadCommand
@@ -24,6 +25,11 @@ def positive_float(value):
 def rec_command(args, config):
     api = Api(config.api_url, os.environ.get("USER"), config.api_token)
     return RecordCommand(api, args)
+
+
+def stream_command(args, config):
+    api = Api(config.api_url, os.environ.get("USER"), config.api_token)
+    return StreamCommand(api, args)
 
 
 def play_command(args, config):
@@ -96,6 +102,19 @@ For help on a specific command run:
     parser_rec.add_argument('-q', '--quiet', help='be quiet, suppress all notices/warnings (implies -y)', action='store_true', default=cfg.record_quiet)
     parser_rec.add_argument('filename', nargs='?', default='', help='filename/path to save the recording to')
     parser_rec.set_defaults(func=rec_command)
+
+    # create the parser for the "stream" command
+    parser_stream = subparsers.add_parser('stream', help='Record terminal session')
+    parser_stream.add_argument('--stdin', help='enable stdin streaming, disabled by default', action='store_true', default=cfg.record_stdin)
+    parser_stream.add_argument('--append', help='append to existing streaming', action='store_true', default=False)
+    parser_stream.add_argument('--raw', help='save only raw stdout output', action='store_true', default=False)
+    parser_stream.add_argument('-c', '--command', help='command to stream, defaults to $SHELL', default=cfg.record_command)
+    parser_stream.add_argument('-e', '--env', help='list of environment variables to capture, defaults to ' + config.DEFAULT_RECORD_ENV, default=cfg.record_env)
+    parser_stream.add_argument('-t', '--title', help='title of the asciicast')
+    parser_stream.add_argument('-i', '--idle-time-limit', help='limit streamed idle time to given number of seconds', type=positive_float, default=maybe_str(cfg.record_idle_time_limit))
+    parser_stream.add_argument('-y', '--yes', help='answer "yes" to all prompts (e.g. upload confirmation)', action='store_true', default=cfg.record_yes)
+    parser_stream.add_argument('-q', '--quiet', help='be quiet, suppress all notices/warnings (implies -y)', action='store_true', default=cfg.record_quiet)
+    parser_stream.set_defaults(func=stream_command)
 
     # create the parser for the "play" command
     parser_play = subparsers.add_parser('play', help='Replay terminal session')

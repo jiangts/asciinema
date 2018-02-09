@@ -182,3 +182,37 @@ class Recorder:
         with writer(path, header, rec_stdin, start_time_offset) as w:
             self.pty_recorder.record_command(['sh', '-c', command], w, command_env)
 
+
+
+class Streamer:
+
+    def __init__(self, pty_recorder=None):
+        self.pty_recorder = pty_recorder if pty_recorder is not None else PtyRecorder()
+
+    def stream(self, path, append, command, command_env, captured_env, rec_stdin, title, idle_time_limit):
+        start_time_offset = 0
+
+        if append and os.stat(path).st_size > 0:
+            start_time_offset = get_duration(path)
+
+        cols = int(subprocess.check_output(['tput', 'cols']))
+        lines = int(subprocess.check_output(['tput', 'lines']))
+
+        header = {
+            'version': 2,
+            'width': cols,
+            'height': lines,
+            'timestamp': int(time.time()),
+            'idle_time_limit': idle_time_limit,
+        }
+
+        if captured_env:
+            header['env'] = captured_env
+
+        if title:
+            header['title'] = title
+
+        with writer(path, header, rec_stdin, start_time_offset) as w:
+            self.pty_recorder.record_command(['sh', '-c', command], w, command_env)
+        print("HERE BOI")
+
