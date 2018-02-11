@@ -83,6 +83,29 @@ const pushHeader = function(req, res) {
   }
 }
 
+const pushMeta = function(req, res) {
+  var sessionKey = req.args.session
+  if (sessionKey && sessions[sessionKey]) {
+    const dims = JSON.parse(req.args.event)[2]
+    const width = dims[0]
+    const height = dims[1]
+
+    var session = sessions[sessionKey]
+    var header = JSON.parse(session.header)
+
+    if (header) {
+      header.width = width
+      header.height = height
+      session.header = JSON.stringify(header)
+      return pushEvent(req, res)
+    }
+  }
+  else {
+    res.status(400).end('missing session parameter')
+  }
+
+}
+
 const requestSession = function(req, res) {
   const id = shortid.generate()
   res.json({id: id})
@@ -112,6 +135,7 @@ const getSessions = function(req, res) {
 
 // stuff the array into a dict with key event
 api(app, '/push-event', pushEvent)
+api(app, '/push-meta', pushMeta)
 api(app, '/push-header', pushHeader)
 api(app, '/request-session', requestSession)
 api(app, '/end-session', endSession)

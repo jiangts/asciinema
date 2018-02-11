@@ -6,6 +6,7 @@ import time
 import codecs
 import requests
 import uuid
+import webbrowser
 from requests_futures.sessions import FuturesSession
 from multiprocessing import Process, Queue
 
@@ -98,6 +99,7 @@ class writer():
         self.sessionKey = r.json()['id']
         self.header['stream_url'] = self.host + '/stream/' + self.sessionKey
         print(self.host + '/?session=' + self.sessionKey)
+        # webbrowser.open(self.host + '/?session=' + self.sessionKey)
         header = json.dumps(self.header, ensure_ascii=False, indent=None, separators=(', ', ': '))
         self.session.post(self.host + '/push-header', data={'header':header, 'session': self.sessionKey})
         self.seqno = 0
@@ -149,7 +151,7 @@ class writer():
         json_value = [ts, 'm', dims]
         line = json.dumps(json_value, ensure_ascii=False, indent=None, separators=(', ', ': '))
         self.seqno += 1
-        self.session.post(self.host + '/push-event', data={'event': line, 'seqno': self.seqno, 'session': self.sessionKey})
+        self.session.post(self.host + '/push-meta', data={'event': line, 'seqno': self.seqno, 'session': self.sessionKey})
 
 
 class Recorder:
