@@ -99,7 +99,7 @@ class writer():
         self.sessionKey = r.json()['id']
         self.header['stream_url'] = self.host + '/stream/' + self.sessionKey
         print(self.host + '/?session=' + self.sessionKey)
-        # webbrowser.open(self.host + '/?session=' + self.sessionKey)
+        webbrowser.open(self.host + '/?session=' + self.sessionKey)
         header = json.dumps(self.header, ensure_ascii=False, indent=None, separators=(', ', ': '))
         self.session.post(self.host + '/push-header', data={'header':header, 'session': self.sessionKey})
         self.seqno = 0
