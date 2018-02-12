@@ -92,14 +92,17 @@ class writer():
         self.stdout_decoder = codecs.getincrementaldecoder('UTF-8')('replace')
 
         self.session = FuturesSession()
-        self.host = 'http://localhost:3003'
-        # self.host = 'https://term.motif.gq'
+        # self.host = 'http://localhost:3003'
+        self.host = 'https://term.motif.gq'
 
         r = requests.get(self.host + '/request-session')
         self.sessionKey = r.json()['id']
         self.header['stream_url'] = self.host + '/stream/' + self.sessionKey
         print(self.host + '/?session=' + self.sessionKey)
-        webbrowser.open(self.host + '/?session=' + self.sessionKey)
+        try:
+            webbrowser.open(self.host + '/?session=' + self.sessionKey)
+        except:
+            print('failed to open browser')
         header = json.dumps(self.header, ensure_ascii=False, indent=None, separators=(', ', ': '))
         self.session.post(self.host + '/push-header', data={'header':header, 'session': self.sessionKey})
         self.seqno = 0
