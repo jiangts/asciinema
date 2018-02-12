@@ -7,6 +7,10 @@ module.exports = function (req, res, next) {
       'Connection': 'keep-alive',
       'X-Accel-Buffering': 'no'
     })
+
+    var ping = function () { res.write(`event: ping\ndata: {"time": "${(new Date).getTime()}"}\n\n`); }
+    ping()
+    setInterval(ping, 10*1000)
   }
 
   res.sseSend = function(data) {
