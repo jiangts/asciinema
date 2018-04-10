@@ -9,7 +9,7 @@ var shortid = require('shortid')
 var PORT = process.env.PORT || 3003;
 
 // app.use(express.static('public'))
-app.use(express.static('player'))
+app.use(express.static(__dirname + '/player'))
 app.use(sse)
 
 // parse various different custom JSON types as JSON
